@@ -77,7 +77,7 @@ if (is_file(__DIR__ . '/uploadedFiles/tests.json') && (isset($_GET['testNum']) o
                                     $errorCounts++;
                                 }
                             }
-                        } elseif (in_array($_POST[$labelName], $question['rightAnswers']) or in_array($answer, $question['rightAnswers'])) {
+                        } elseif (in_array($answer, $question['rightAnswers'])) {
                             $color = 'Red';
                             $fontWeight = 'Bold';
                             $errorCounts++;

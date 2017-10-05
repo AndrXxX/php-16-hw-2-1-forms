@@ -3,7 +3,9 @@ $homeWorkNum = '2.2';
 $homeWorkCaption = 'Обработка форм.';
 $fileReady = false;
 $additionalHint = '';
-$file = $_FILES['myfile'];
+if (isset($_FILES['myfile'])) {
+    $file = $_FILES['myfile'];
+}
 
 /* проверяем загружен ли файл и если да - проверяем соотвествие и перемещаем его в подпапку */
 if (isset($file['name']) && !empty($file['name'])) {
