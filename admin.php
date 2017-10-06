@@ -18,6 +18,10 @@ if (isset($file['name']) && !empty($file['name'])) {
     }
 }
 
+if (is_file(__DIR__ . '/uploadedFiles/tests.json')) {
+    $fileReady = true;
+}
+
 /* Если нажали Очистить папку */
 if (isset($_POST['ClearFilesFolder'])) {
     clear_dir(__DIR__ . '/uploadedFiles/');
