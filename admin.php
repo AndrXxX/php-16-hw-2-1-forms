@@ -18,7 +18,7 @@ if (isset($file['name']) && !empty($file['name'])) {
     }
 }
 
-if (is_file(__DIR__ . '/uploadedFiles/tests.json')) {
+if (is_file(__DIR__ . '/uploadedFiles/tests.json') && !isset($_POST['ShowAdminForm'])) {
     $fileReady = true;
 }
 
