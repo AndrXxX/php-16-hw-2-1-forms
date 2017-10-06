@@ -18,7 +18,7 @@ if (isset($file['name']) && !empty($file['name'])) {
     }
 }
 
-if ((isset($_POST['ShowAdminForm']) === false) && is_file(__DIR__ . '/uploadedFiles/tests.json')) {
+if ((isset($_POST['ShowAdminLoadForm']) === false) && is_file(__DIR__ . '/uploadedFiles/tests.json')) {
     $fileReady = true;
 }
 
@@ -86,7 +86,7 @@ function clear_dir($dir)
         <hr>
         <p><?= $additionalHint ?></p>
         <div>
-          <input type="submit" formaction="admin.php" name="ShowAdminForm" value="<= Вернуться"
+          <input type="submit" formaction="admin.php" name="ShowAdminLoadForm" value="<= Вернуться"
                  title="Вернуться к загрузке файла">
           <input type="submit" formaction="admin.php" name="ClearFilesFolder" value="Очистить папку"
                  title="При нажатии папка с загруженными файлами на сервере будет очищена">
