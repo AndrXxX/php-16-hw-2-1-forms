@@ -97,21 +97,21 @@ if (is_file(__DIR__ . '/uploadedFiles/tests.json') && (isset($_GET['testNum']) o
                                                    value="<?= $answer ?>" <?= $needChecked ?>><?= $answer ?>
         </label>
 
-        <?php
-                endforeach;
-                /* вывод подсказки при нажатии ShowTestResults */
-                if (isset($_POST['ShowTestResults'])) {
-                    if ($errorCounts == 0) {
-                        $additionalHint = 'Вы правильно ответили на все вопросы! Поздравляем!';
-                    } else {
-                        $additionalHint = 'Количество ошибок, допущенных при выполнении теста: ' . $errorCounts . ' шт.';
-                    }
-                }
-        ?>
+        <?php endforeach; ?>
 
       </fieldset>
 
-      <?php endforeach; ?>
+      <?php
+          endforeach;
+          /* вывод подсказки при нажатии ShowTestResults */
+          if (isset($_POST['ShowTestResults'])) {
+              if ($errorCounts == 0) {
+                  $additionalHint = 'Вы правильно ответили на все вопросы! Поздравляем!';
+              } else {
+                  $additionalHint = 'Количество ошибок, допущенных при выполнении теста: ' . $errorCounts . ' шт.';
+              }
+          }
+      ?>
       <hr>
       <p><?= $additionalHint ?></p>
       <div>
