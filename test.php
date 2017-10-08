@@ -14,8 +14,10 @@ if (is_file(__DIR__ . '/uploadedFiles/tests.json') && (isset($_GET['testNum']) o
     } elseif (isset($_POST['testNum'])) {
         $testNum = $_POST['testNum'];
     }
-    $test = (isset($testNum) ? $tests[$testNum] : 1);
-    $testReady = true;
+    if (isset($testNum) && isset($tests[$testNum])) {
+        $test = $tests[$testNum];
+        $testReady = true;
+    }
 }
 
 ?>
