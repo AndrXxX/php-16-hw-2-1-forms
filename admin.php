@@ -2,6 +2,8 @@
 $homeWorkNum = '2.2';
 $homeWorkCaption = 'Обработка форм.';
 $fileReady = false;
+$fileName = 'tests.json';
+$filePath = __DIR__ . '/uploadedFiles/'.$fileName;
 $additionalHint = '';
 if (isset($_FILES['myfile'])) {
     $file = $_FILES['myfile'];
@@ -11,15 +13,15 @@ if (isset($_FILES['myfile'])) {
 if (isset($file['name']) && !empty($file['name'])) {
     if ($file['type'] == 'application/json' &&
         $file['error'] == UPLOAD_ERR_OK &&
-        move_uploaded_file($file['tmp_name'], __DIR__ . '/uploadedFiles/tests.json')) {
+        move_uploaded_file($file['tmp_name'], $filePath)) {
         $fileReady = true;
     } else {
         $additionalHint = 'Файл не загружен (возможно тип файла не подходит), попробуйте еще раз.';
     }
 }
 
-/* проверяем чтобы не была нажата кнопка загрузки файла и файл уже был на сервере */
-if ((isset($_POST['ShowAdminLoadForm']) === false) && is_file(__DIR__ . '/uploadedFiles/tests.json')) {
+/* проверяем чтобы файл уже был на сервере */
+if (is_file($filePath)) {
     $fileReady = true;
 }
 
@@ -65,18 +67,24 @@ function clear_dir($dir)
 
     <form method="post" action="" enctype="multipart/form-data">
       <fieldset>
-        <?php if (!$fileReady) { ?>
+        <?php
+        if (!$fileReady or isset($_POST['ShowAdminLoadForm'])) {
+        ?>
 
-        <!-- Форма загрузки файла, когда файл еще не загружен -->
+        <!-- Форма загрузки файла, когда файл еще не загружен или нажали ShowAdminLoadForm -->
         <legend>Загрузка файла</legend>
 
         <label>Файл: <input type="file" name="myfile"></label>
         <hr>
-        <p><?= $additionalHint ?></p>
+        <p><?= ($fileReady) ? "Файл $fileName уже загружен, можно перейти к тестам" : $additionalHint ?></p>
         <div>
-          <input type="submit" name="LoadFileToServer" value="Отправить файл на сервер">
-          <input type="submit" name="ClearFilesFolder" value="Очистить"
+          <input type="submit" name="LoadFileToServer" value="Отправить новый файл на сервер">
+          <input type="submit" name="ClearFilesFolder" value="Очистить папку"
                  title="При нажатии папка с загруженными файлами на сервере будет очищена">
+          <?php if ($fileReady) { /* выводим кнопку перехода к тестам если файл есть на диске */?>
+          <input type="submit" formaction="list.php" name="ShowTestsList" value="К тестам =>"
+                 title="Перейти в выполнению тестов">
+          <?php } ?>
         </div>
 
         <?php } else { ?>
@@ -87,7 +95,7 @@ function clear_dir($dir)
         <hr>
         <p><?= $additionalHint ?></p>
         <div>
-          <input type="submit" formaction="admin.php" name="ShowAdminLoadForm" value="<= Вернуться"
+          <input type="submit" formaction="admin.php" name="ShowAdminLoadForm" value="<= Загрузить новый файл"
                  title="Вернуться к загрузке файла">
           <input type="submit" formaction="admin.php" name="ClearFilesFolder" value="Очистить папку"
                  title="При нажатии папка с загруженными файлами на сервере будет очищена">
