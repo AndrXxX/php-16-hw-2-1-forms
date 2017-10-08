@@ -14,7 +14,7 @@ if (is_file(__DIR__ . '/uploadedFiles/tests.json') && (isset($_GET['testNum']) o
     } elseif (isset($_POST['testNum'])) {
         $testNum = $_POST['testNum'];
     }
-    $test = (isset($testNum) ? $tests[$testNum] : 0);
+    $test = (isset($testNum) ? $tests[$testNum] : 1);
     $testReady = true;
 }
 
@@ -115,7 +115,7 @@ if (is_file(__DIR__ . '/uploadedFiles/tests.json') && (isset($_GET['testNum']) o
       <div>
         <input type="submit" formaction="admin.php" name="ShowAdminForm" value="<<= Вернуться к загрузке файла"
                title="Вернуться к загрузке файла">
-        <input type="submit" formaction="list.php" name="ShowAdminForm" value="<= Вернуться к выбору теста"
+        <input type="submit" formaction="list.php" name="ShowListForm" value="<= Вернуться к выбору теста"
                title="Вернуться к выбору теста">
         <input type="hidden" name="testNum" value="<?= (isset($testNum) ? $testNum : 0) ?>">
         <input type="submit" formaction="test.php" name="ShowTestResults" value="Проверить"
