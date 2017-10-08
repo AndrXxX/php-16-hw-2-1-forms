@@ -32,7 +32,7 @@ if (is_file(__DIR__ . '/uploadedFiles/tests.json')) {
 
     <form method="post" enctype="multipart/form-data">
       <fieldset>
-        <?php if ($testsReady) { ?>
+        <?php if ($testsReady && isset($tests)) { ?>
 
         <legend>Выберите один из <?= count($tests) ?> вариантов теста, который вы желаете пройти:</legend>
 
@@ -41,7 +41,7 @@ if (is_file(__DIR__ . '/uploadedFiles/tests.json')) {
             foreach ($tests as $testNum => $test):
                 $i++;
                 $needChecked = ($i == 1 ? 'Checked' : '');
-                ?>
+        ?>
 
         <p><label><input type="radio" name="testNum"
                          value="<?= $testNum ?>" <?= $needChecked ?>><?= $test['testName'] ?></label></p>

@@ -7,7 +7,7 @@ if (isset($_FILES['myfile'])) {
     $file = $_FILES['myfile'];
 }
 
-/* проверяем загружен ли файл и если да - проверяем соотвествие и перемещаем его в подпапку */
+/* проверяем отправлен ли файл и если да - проверяем соотвествие и перемещаем его в подпапку */
 if (isset($file['name']) && !empty($file['name'])) {
     if ($file['type'] == 'application/json' &&
         $file['error'] == UPLOAD_ERR_OK &&
@@ -18,6 +18,7 @@ if (isset($file['name']) && !empty($file['name'])) {
     }
 }
 
+/* проверяем чтобы не была нажата кнопка загрузки файла и файл уже был на сервере */
 if ((isset($_POST['ShowAdminLoadForm']) === false) && is_file(__DIR__ . '/uploadedFiles/tests.json')) {
     $fileReady = true;
 }
@@ -82,7 +83,7 @@ function clear_dir($dir)
 
         <!-- Форма загрузки файла, когда файл уже загружен -->
         <legend>Обработка файла</legend>
-        <p>Файл <?= (isset($file['name']) ? $file['name'] : 'tests.json') ?> загружен, можно перейти к выполнению тестов.</p>
+        <p>Файл <?= (isset($file) ? $file['name'] : 'tests.json') ?> загружен, можно перейти к выполнению тестов.</p>
         <hr>
         <p><?= $additionalHint ?></p>
         <div>

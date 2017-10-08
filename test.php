@@ -14,7 +14,7 @@ if (is_file(__DIR__ . '/uploadedFiles/tests.json') && (isset($_GET['testNum']) o
     } elseif (isset($_POST['testNum'])) {
         $testNum = $_POST['testNum'];
     }
-    $test = $tests[$testNum];
+    $test = (isset($testNum) ? $tests[$testNum] : 0);
     $testReady = true;
 }
 
@@ -40,7 +40,7 @@ if (is_file(__DIR__ . '/uploadedFiles/tests.json') && (isset($_GET['testNum']) o
 
   <form method="post" enctype="multipart/form-data">
     <fieldset>
-      <?php if ($testReady) { ?>
+      <?php if ($testReady && isset($test)) { ?>
 
       <legend><?= $test['testName'] ?></legend>
 
@@ -63,33 +63,32 @@ if (is_file(__DIR__ . '/uploadedFiles/tests.json') && (isset($_GET['testNum']) o
                     Это нужно для правильной работы переключателей и передачи параметров для проверки теста */
 
                     if (isset($_POST['ShowTestResults'])) {
-                        /* Если нажали проверка результатов - расставляем правильно галки и проверяем результат
-                        (для правильного выбора делаем цвет текста зеленым, для неправильного - красным и выделяем жирным) */
+                        /* Если нажали ShowTestResults (проверка результатов) - расставляем правильно галки и проверяем результат
+                        (для правильного выбора делаем цвет текста зеленым, для неправильного (и для невыбранных правильных значений)
+                        - красным и выделяем жирным) */
                         $needChecked = '';
-                        if (isset($_POST[$labelName])) {
-                            if ($_POST[$labelName] === $answer) {
-                                $needChecked = 'Checked';
-                                if (in_array($_POST[$labelName], $question['rightAnswers'])) {
-                                    $color = 'Green';
-                                } else {
-                                    $color = 'Red';
-                                    $fontWeight = 'Bold';
-                                    $errorCounts++;
-                                }
-                            } elseif (in_array($answer, $question['rightAnswers'])) {
+                        if (isset($_POST[$labelName]) && $_POST[$labelName] === $answer) {
+                            $needChecked = 'Checked';
+                            if (in_array($_POST[$labelName], $question['rightAnswers'])) {
+                                $color = 'Green';
+                            } else {
                                 $color = 'Red';
                                 $fontWeight = 'Bold';
+                                $errorCounts++;
                             }
                         } elseif (in_array($answer, $question['rightAnswers'])) {
                             $color = 'Red';
                             $fontWeight = 'Bold';
-                            $errorCounts++;
+                            if ($_POST[$labelName] === $answer) {
+                              $errorCounts++;
+                            }
                         }
 
                     } else {
+                        /* Если кнопка ShowTestResults не была нажата, то для первых элементов типа radio,
+                        то ставим атрибут Checked */
                         $needChecked = ($i === 1 && $questionType !== 'checkbox' ? 'Checked' : '');
                     }
-
         ?>
 
         <label style="color: <?= $color ?>; font-weight: <?= $fontWeight ?>"><input type="<?= $questionType ?>" name="<?= $labelName ?>"
@@ -98,6 +97,7 @@ if (is_file(__DIR__ . '/uploadedFiles/tests.json') && (isset($_GET['testNum']) o
 
         <?php
                 endforeach;
+                /* вывод подсказки при нажатии ShowTestResults */
                 if (isset($_POST['ShowTestResults'])) {
                     if ($errorCounts == 0) {
                         $additionalHint = 'Вы правильно ответили на все вопросы! Поздравляем!';
@@ -117,7 +117,7 @@ if (is_file(__DIR__ . '/uploadedFiles/tests.json') && (isset($_GET['testNum']) o
                title="Вернуться к загрузке файла">
         <input type="submit" formaction="list.php" name="ShowAdminForm" value="<= Вернуться к выбору теста"
                title="Вернуться к выбору теста">
-        <input type="hidden" name="testNum" value="<?= $testNum ?>">
+        <input type="hidden" name="testNum" value="<?= (isset($testNum) ? $testNum : 0) ?>">
         <input type="submit" formaction="test.php" name="ShowTestResults" value="Проверить"
                title="Проверить результаты теста">
       </div>
