@@ -1,13 +1,27 @@
 <?php
 $homeWorkNum = '2.2';
 $homeWorkCaption = 'Обработка форм.';
+$filesPath = __DIR__ . '/uploadedFiles/';
 $testsReady = false;
 $additionalHint = '';
 
-/* проверяем есть ли файл и если да - получаем его содержимое */
-if (is_file(__DIR__ . '/uploadedFiles/tests.json')) {
-    $tests = json_decode(file_get_contents(__DIR__ . '/uploadedFiles/tests.json'), true);
+/* проверяем список json файлов с тестами и собираем массив из их названий */
+$testFilesList = getNamesJson($filesPath);
+if (count($testFilesList) > 0) {
+
+    $tests = array();
+    foreach ($testFilesList as $fileName) {
+        $tests[] = json_decode(file_get_contents($filesPath . $fileName), true)['testName'];
+    }
     $testsReady = true;
+}
+
+/* функция возвращает массив с именами json-файлов (с тестами) */
+function getNamesJson($dir)
+{
+    $array = array_diff(scandir($dir), array('..', '.'));
+    sort($array);
+    return $array;
 }
 
 ?>
@@ -37,14 +51,14 @@ if (is_file(__DIR__ . '/uploadedFiles/tests.json')) {
         <legend>Выберите один из <?= count($tests) ?> вариантов теста, который вы желаете пройти:</legend>
 
         <?php
-            $i = 0;
-            foreach ($tests as $testNum => $test):
-                $i++;
-                $needChecked = ($i == 1 ? 'Checked' : '');
+        $i = 0;
+        foreach ($tests as $testNum => $test):
+            $i++;
+            $needChecked = ($i == 1 ? 'Checked' : '');
         ?>
 
         <p><label><input type="radio" name="testNum"
-                         value="<?= $testNum ?>" <?= $needChecked ?>><?= $test['testName'] ?></label></p>
+                         value="<?= $testNum ?>" <?= $needChecked ?>><?= $test ?></label></p>
 
         <?php endforeach; ?>
 

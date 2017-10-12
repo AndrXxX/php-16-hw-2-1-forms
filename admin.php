@@ -2,46 +2,134 @@
 $homeWorkNum = '2.2';
 $homeWorkCaption = 'Обработка форм.';
 $fileReady = false;
-$fileName = 'tests.json';
-$filePath = __DIR__ . '/uploadedFiles/'.$fileName;
+$filesPath = __DIR__ . '/uploadedFiles/';
 $additionalHint = '';
-if (isset($_FILES['myfile'])) {
-    $file = $_FILES['myfile'];
-}
+$additionalHintStyle = '';
+$warningStyle = 'font-weight: 700; color: red;';
 
-/* проверяем отправлен ли файл и если да - проверяем соотвествие и перемещаем его в подпапку */
-if (isset($file['name']) && !empty($file['name'])) {
-    if ($file['type'] == 'application/json' &&
-        $file['error'] == UPLOAD_ERR_OK &&
-        move_uploaded_file($file['tmp_name'], $filePath)) {
-        $fileReady = true;
-    } else {
-        $additionalHint = 'Файл не загружен (возможно тип файла не подходит), попробуйте еще раз.';
+/* проверяем нажимали ли кнопку LoadFileToServer */
+if (isset($_POST['LoadFileToServer'])) {
+
+    $fileReady = (isset($_FILES['myFile'])) ? checkFile($_FILES['myFile'], $filesPath) : false;
+    /* Проверяем файл с помощью функции, в зависимости от результата получаем подсказку */
+    switch ($fileReady) {
+        case 'FileNotSet':
+            $additionalHint = 'Файл не загружен, так как не был выбран.';
+            break;
+        case 'WrongFileType':
+            $additionalHint = 'Файл не загружен (тип файла не подходит).';
+            break;
+        case 'ErrorLoading':
+            $additionalHint = 'Произошла ошибка при загрузке файла, попробуйте повторить.';
+            break;
+        case 'SameFileExist':
+            $additionalHint = 'Файл не загружен, так как на сервере уже есть идентичный файл.';
+            break;
+        case 'FileStructureNotValid':
+            $additionalHint = 'Структура загружаемого файла не подходит, попробуйте загрузить другой файл.';
+            break;
+        case 'FileNotMoved':
+            $additionalHint = 'Произошла ошибка при обработке файла на сервере, попробуйте повторить.';
+            break;
+        case false:
+            $additionalHint = 'Ошибка загрузки, попробуйте повторить.';
+            break;
+        case true:
+            break;
+    }
+    if ($fileReady !== true and $fileReady !== false) {
+        $fileReady = false;
+        $additionalHintStyle = $warningStyle; /* выделяем стиль подсказки */
     }
 }
 
-/* проверяем чтобы файл уже был на сервере */
-if (is_file($filePath)) {
+/* проверяем есть ли на сервере загруженные файлы */
+if (count(getNamesJson($filesPath)) > 0) {
     $fileReady = true;
 }
 
 /* Если нажали Очистить папку */
 if (isset($_POST['ClearFilesFolder'])) {
-    clear_dir(__DIR__ . '/uploadedFiles/');
+    clearDir(__DIR__ . '/uploadedFiles/');
     $additionalHint = "Папка с файлами очищена!";
     $fileReady = false;
 }
 
-// функция очищения папки от файлов
-function clear_dir($dir)
+function checkFile($file, $filesPath)
 {
-    $list_temp = scandir($dir);
-    unset($list_temp[0], $list_temp[1]);
-    $list = array_values($list_temp);
+    /* Функция возвращает true, если все в порядке или ошибку если что-то не так */
 
+    if (!isset($file['name']) or empty($file['name'])) {
+        return 'FileNotSet';
+    }
+
+    if (isset($file['type'])) {
+        if ($file['type'] !== 'application/json') {
+            return 'WrongFileType';
+        }
+
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            return 'ErrorLoading';
+        }
+    }
+
+    if (isset($file['tmp_name'])) {
+        if (in_array(hash_file('md5', $file['tmp_name']), get_hash_json($filesPath))) {
+            return 'SameFileExist';
+        }
+
+        if (!isset($file['tmp_name']['testName']) or !isset($file['tmp_name']['questions'])) {
+            return 'FileStructureNotValid';
+        }
+
+        if (!move_uploaded_file($file['tmp_name'], $filesPath . setNameJson($filesPath))) {
+            return 'FileNotMoved';
+        }
+    }
+
+    return true;
+}
+
+/* функция очищения папки от файлов */
+function clearDir($dir)
+{
+    $list = array_values(getNamesJson($dir));
     foreach ($list as $file) {
         unlink($dir . $file);
     }
+}
+
+/* функция сканирует папку и возвращает первое незанятое название файла 1.json, 2.json и т.д. */
+function setNameJson($dir)
+{
+    $filesList = getNamesJson($dir);
+    $fileName = (count($filesList) + 1) . '.json';
+    $i = 2;
+    while (is_file($dir . $fileName)) {
+        $fileName = (count($filesList) + $i) . '.json';
+        $i++;
+    }
+    return $fileName;
+}
+
+/* функция возвращает массив с именами json-файлов (с тестами) */
+function getNamesJson($dir)
+{
+    $array = array_diff(scandir($dir), array('..', '.'));
+    sort($array);
+    return $array;
+}
+
+/* функция возвращает массив с хешами json-файлов */
+function get_hash_json($dir)
+{
+    $hash_list = array();
+    if (count(getNamesJson($dir)) > 0) {
+        foreach (getNamesJson($dir) as $file) {
+            $hash_list[] = hash_file('md5', $dir . $file);
+        }
+    }
+    return $hash_list;
 }
 
 ?>
@@ -55,6 +143,7 @@ function clear_dir($dir)
       form {
         display: inline-block;
       }
+
       div {
         text-align: center;
       }
@@ -63,48 +152,45 @@ function clear_dir($dir)
   <body>
     <h1>Интерфейс загрузки файла</h1>
     <p>На этой странице необходимо выбрать и загрузить json-файл с тестами для дальнейшей работы.</p>
-    <p>Для этих целей можно использовать файл tests.json по ссылке: <a href="tests.json">открыть</a>, <a href="tests.json" download="">скачать</a>.</p>
+    <p>Для этих целей можно использовать файлы: <a href="./examplesTests/english.json" download="">english.json</a>,
+      <a href="./examplesTests/multiplication.json" download="">multiplication.json</a> и
+      <a href="./examplesTests/units.json" download="">units.json</a> .</p>
+    <p>В форму загрузки встроена проверка загружаемого файла на наличие на сервере (по хешу).</p>
+    <p>Если загружаемый файл уже есть на сервере, то он не будет загружен.</p>
 
     <form method="post" action="" enctype="multipart/form-data">
+
       <fieldset>
-        <?php
-        if (!$fileReady or isset($_POST['ShowAdminLoadForm'])) {
-        ?>
-
-        <!-- Форма загрузки файла, когда файл еще не загружен или нажали ShowAdminLoadForm -->
-        <legend>Загрузка файла</legend>
-
-        <label>Файл: <input type="file" name="myfile"></label>
+        <legend>Загрузка файлов</legend>
+        <label>Файл: <input type="file" name="myFile"></label>
         <hr>
-        <p><?= ($fileReady) ? "Файл $fileName уже загружен, можно перейти к тестам" : $additionalHint ?></p>
+        <p style="<?= $additionalHintStyle ?>"><?= $additionalHint ?></p>
         <div>
           <input type="submit" name="LoadFileToServer" value="Отправить новый файл на сервер">
+        </div>
+      </fieldset>
+
+      <?php if ($fileReady) { ?>
+      <fieldset>
+        <legend>Список файлов</legend>
+        <p>Json-файлы с тестами, загруженные на сервер:</p>
+
+        <ul>
+            <?php foreach (getNamesJson($filesPath) as $test) : /* Выводим список файлов и названий тестов */ ?>
+              <li><?= $test . ' / ' . json_decode(file_get_contents($filesPath . $test), true)['testName'] ?></li>
+            <?php endforeach; ?>
+        </ul>
+
+        <p>Можно перейти к выбору теста.</p>
+        <hr>
+        <div>
           <input type="submit" name="ClearFilesFolder" value="Очистить папку"
                  title="При нажатии папка с загруженными файлами на сервере будет очищена">
-          <?php if ($fileReady) { /* выводим кнопку перехода к тестам если файл есть на диске */?>
-          <input type="submit" formaction="list.php" name="ShowTestsList" value="К тестам =>"
-                 title="Перейти в выполнению тестов">
-          <?php } ?>
-        </div>
-
-        <?php } else { ?>
-
-        <!-- Форма загрузки файла, когда файл уже загружен -->
-        <legend>Обработка файла</legend>
-        <p>Файл <?= (isset($file) ? $file['name'] : 'tests.json') ?> загружен, можно перейти к выполнению тестов.</p>
-        <hr>
-        <p><?= $additionalHint ?></p>
-        <div>
-          <input type="submit" formaction="admin.php" name="ShowAdminLoadForm" value="<= Загрузить новый файл"
-                 title="Вернуться к загрузке файла">
-          <input type="submit" formaction="admin.php" name="ClearFilesFolder" value="Очистить папку"
-                 title="При нажатии папка с загруженными файлами на сервере будет очищена">
           <input type="submit" formaction="list.php" name="ShowTestsList" value="К тестам =>"
                  title="Перейти в выполнению тестов">
         </div>
-
-        <?php } ?>
       </fieldset>
+      <?php } ?>
     </form>
   </body>
 </html>
