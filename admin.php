@@ -34,7 +34,11 @@ if (isset($_POST['LoadFileToServer'])) {
         case false:
             $additionalHint = 'Ошибка загрузки, попробуйте повторить.';
             break;
-        case true:
+        case 'FileUploadOK':
+            $fileReady = true;
+            $additionalHint = 'Файл успешно загружен';
+            break;
+        default:
             break;
     }
     if ($fileReady !== true and $fileReady !== false) {
@@ -57,7 +61,7 @@ if (isset($_POST['ClearFilesFolder'])) {
 
 function checkFile($file, $filesPath)
 {
-    /* Функция возвращает true, если все в порядке или ошибку если что-то не так */
+    /* Функция возвращает FileUploadOK, если все в порядке или ошибку если что-то не так */
 
     if (!isset($file['name']) or empty($file['name'])) {
         return 'FileNotSet';
@@ -77,8 +81,8 @@ function checkFile($file, $filesPath)
         if (in_array(hash_file('md5', $file['tmp_name']), get_hash_json($filesPath))) {
             return 'SameFileExist';
         }
-
-        if (!isset($file['tmp_name']['testName']) or !isset($file['tmp_name']['questions'])) {
+        $decodedFile = json_decode(file_get_contents($file['tmp_name']), true);
+        if (!isset($decodedFile['testName']) or !isset($decodedFile['questions'])) {
             return 'FileStructureNotValid';
         }
 
@@ -86,8 +90,7 @@ function checkFile($file, $filesPath)
             return 'FileNotMoved';
         }
     }
-
-    return true;
+    return 'FileUploadOK';
 }
 
 /* функция очищения папки от файлов */
