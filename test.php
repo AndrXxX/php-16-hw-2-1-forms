@@ -95,7 +95,7 @@ function elementStyle($labelName, $answer, $rightAnswers, $warningStyle, $rightS
         <?php if ($testReady && isset($test)) {
             $needChecked = '';
             foreach ($test['questions'] as $questionNum => $question):
-                $questionType = ($question['type'] == 'single' ? 'radio' : 'checkbox');
+                $questionType = ($question['type'] === 'single' ? 'radio' : 'checkbox');
                 $i = 0;
         ?>
 
@@ -107,7 +107,7 @@ function elementStyle($labelName, $answer, $rightAnswers, $warningStyle, $rightS
                   ++$i;
                   $color = 'black';
                   $fontWeight = 'normal';
-                  $labelName = ($question['type'] == 'single' ? $questionNum : $questionNum . '|' . $answerNum);
+                  $labelName = ($question['type'] === 'single' ? $questionNum : $questionNum . '|' . $answerNum);
                   /*Если label - это чекбокс, то делаем имя в таком формате: "вопрос + | + № ответа", иначе - только имя вопроса.
                   Это нужно для правильной работы переключателей и передачи параметров для проверки теста */
 
@@ -139,7 +139,7 @@ function elementStyle($labelName, $answer, $rightAnswers, $warningStyle, $rightS
             endforeach;
             /* вывод подсказки при нажатии ShowTestResults */
             if (isset($_POST['ShowTestResults'])) {
-                if ($errorCounts == 0) {
+                if ($errorCounts === 0) {
                     $additionalHint = 'Вы правильно ответили на все вопросы! Поздравляем!';
                 } else {
                     $additionalHint = 'Количество ошибок, допущенных при выполнении теста: ' . $errorCounts . ' шт.';

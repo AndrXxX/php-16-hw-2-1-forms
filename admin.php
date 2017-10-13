@@ -81,6 +81,7 @@ function checkFile($file, $filesPath)
         if (in_array(hash_file('md5', $file['tmp_name']), get_hash_json($filesPath))) {
             return 'SameFileExist';
         }
+
         $decodedFile = json_decode(file_get_contents($file['tmp_name']), true);
         if (!isset($decodedFile['testName']) or !isset($decodedFile['questions'])) {
             return 'FileStructureNotValid';

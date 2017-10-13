@@ -54,7 +54,7 @@ function getNamesJson($dir)
         $i = 0;
         foreach ($tests as $testNum => $test):
             $i++;
-            $needChecked = ($i == 1 ? 'Checked' : '');
+            $needChecked = ($i === 1 ? 'Checked' : '');
         ?>
 
         <p><label><input type="radio" name="testNum"
